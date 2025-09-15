@@ -313,7 +313,7 @@ function initContactForm() {
             return;
         }
 
-        // Simulate form submission with better feedback
+        // Build mailto link to open user's default email client
         const submitButton = contactForm.querySelector('button[type="submit"]');
         const originalText = submitButton.textContent;
 
@@ -324,24 +324,32 @@ function initContactForm() {
             ease: "power2.out"
         });
 
-        submitButton.textContent = 'Sending...';
+        submitButton.textContent = 'Preparing...';
         submitButton.disabled = true;
 
-        // Simulate API call
-        setTimeout(() => {
-            showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
-            contactForm.reset();
+        const recipient = 'arryanmalhotra2@gmail.com';
+        const subject = encodeURIComponent(`New message from ${name}`);
+        const body = encodeURIComponent(
+            `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
+        );
 
-            // Reset button with animation
-            gsap.to(submitButton, {
-                scale: 1,
-                duration: 0.2,
-                ease: "back.out(1.7)"
-            });
+        const mailtoLink = `mailto:${recipient}?subject=${subject}&body=${body}`;
 
-            submitButton.textContent = originalText;
-            submitButton.disabled = false;
-        }, 2000);
+        // Try to open the user's email client
+        window.location.href = mailtoLink;
+
+        // Provide quick UI feedback
+        showNotification('Opening your email app to send the message...', 'success');
+
+        // Reset UI state
+        contactForm.reset();
+        gsap.to(submitButton, {
+            scale: 1,
+            duration: 0.2,
+            ease: "back.out(1.7)"
+        });
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
     });
 }
 
@@ -362,8 +370,8 @@ function showNotification(message, type = 'info') {
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification fixed top-24 right-6 z-50 p-4 rounded-xl shadow-2xl transform translate-x-full transition-all duration-300 ${type === 'success' ? 'bg-green-500/90 backdrop-blur-md' :
-            type === 'error' ? 'bg-red-500/90 backdrop-blur-md' :
-                'bg-blue-500/90 backdrop-blur-md'
+        type === 'error' ? 'bg-red-500/90 backdrop-blur-md' :
+            'bg-blue-500/90 backdrop-blur-md'
         }`;
 
     notification.innerHTML = `
@@ -417,22 +425,22 @@ function initParallaxEffect() {
 function initTextRotation() {
     const textElements = document.querySelectorAll('.typing-text');
     const firstText = document.querySelector('h2 .text-gradient:first-child');
-    
+
     if (!textElements.length) return;
-    
+
     let currentIndex = 0;
     const texts = [firstText, ...textElements];
-    
+
     function rotateText() {
         // Hide current text
         if (texts[currentIndex]) {
             texts[currentIndex].classList.remove('active');
             texts[currentIndex].style.display = 'none';
         }
-        
+
         // Move to next text
         currentIndex = (currentIndex + 1) % texts.length;
-        
+
         // Show next text
         if (texts[currentIndex]) {
             texts[currentIndex].style.display = 'inline';
@@ -441,12 +449,12 @@ function initTextRotation() {
             }, 50);
         }
     }
-    
+
     // Initialize first text
     if (firstText) {
         firstText.classList.add('active');
     }
-    
+
     // Start rotation after initial delay
     setTimeout(() => {
         setInterval(rotateText, 3000); // Change every 3 seconds
@@ -457,10 +465,10 @@ function initTextRotation() {
 function initTypingEffect() {
     const heroTitle = document.querySelector('.text-gradient');
     if (!heroTitle) return;
-    
+
     const text = heroTitle.textContent;
     heroTitle.textContent = '';
-    
+
     let i = 0;
     const typeWriter = () => {
         if (i < text.length) {
@@ -471,7 +479,7 @@ function initTypingEffect() {
             setTimeout(typeWriter, delay);
         }
     };
-    
+
     // Start typing effect after hero animation
     setTimeout(typeWriter, 1800);
 }
@@ -537,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const projectId = card.getAttribute('data-project');
         const previewOverlay = card.querySelector('.project-preview');
         const originalOverlay = card.querySelector('.project-overlay');
-        
+
         // Hover enter - show preview
         card.addEventListener('mouseenter', () => {
             // Animate card lift
@@ -599,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Click handler to open hosted project
         card.addEventListener('click', (e) => {
             e.preventDefault();
-            
+
             if (projectData[projectId] && projectData[projectId].url) {
                 // Add click animation
                 gsap.to(card, {
