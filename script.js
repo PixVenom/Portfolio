@@ -341,15 +341,24 @@ function initContactForm() {
         // Provide quick UI feedback
         showNotification('Opening your email app to send the message...', 'success');
 
-        // Reset UI state
-        contactForm.reset();
-        gsap.to(submitButton, {
-            scale: 1,
-            duration: 0.2,
-            ease: "back.out(1.7)"
-        });
-        submitButton.textContent = originalText;
-        submitButton.disabled = false;
+        // Show a confirmation modal after opening the mail app
+        setTimeout(() => {
+            showSendConfirmationModal({
+                onConfirm: () => {
+                    showNotification('Thanks! Your message has been marked as sent.', 'success');
+                }
+            });
+
+            // Reset UI state
+            contactForm.reset();
+            gsap.to(submitButton, {
+                scale: 1,
+                duration: 0.2,
+                ease: "back.out(1.7)"
+            });
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+        }, 1200);
     });
 }
 
@@ -399,6 +408,54 @@ function showNotification(message, type = 'info') {
             onComplete: () => notification.remove()
         });
     }, 5000);
+}
+
+// Simple confirmation modal after opening the user's email app
+function showSendConfirmationModal(options = {}) {
+    const { onConfirm } = options;
+
+    // Remove existing modal if any
+    const existing = document.querySelector('.send-confirmation-modal');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'send-confirmation-modal fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6';
+
+    const panel = document.createElement('div');
+    panel.className = 'bg-gray-900 rounded-2xl border border-gray-700/50 p-6 max-w-md w-full text-center shadow-2xl';
+    panel.innerHTML = `
+        <div class="space-y-4">
+            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-green-400/10 mx-auto">
+                <i class="fas fa-envelope text-green-400"></i>
+            </div>
+            <h4 class="text-white text-lg font-semibold">Did your email app open?</h4>
+            <p class="text-gray-400 text-sm">Once you hit Send in your email app, click Confirm below.</p>
+            <div class="flex items-center justify-center gap-3 pt-2">
+                <button id="confirm-send" class="btn-primary text-black font-semibold py-3 px-5 rounded-xl">Confirm sent</button>
+                <a href="mailto:arryanmalhotra2@gmail.com" class="btn-secondary text-green-400 font-semibold py-3 px-5 rounded-xl">Try again</a>
+            </div>
+        </div>
+    `;
+
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+
+    function close() {
+        gsap.to(overlay, {
+            opacity: 0,
+            duration: 0.2,
+            ease: 'power2.in',
+            onComplete: () => overlay.remove()
+        });
+    }
+
+    document.getElementById('confirm-send').addEventListener('click', () => {
+        if (typeof onConfirm === 'function') onConfirm();
+        close();
+    });
+
+    // Animate in
+    gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power2.out' });
 }
 
 // Subtle parallax effect
